@@ -2,4 +2,23 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+ENV_DIR="$3"
+
 ${DIR}/../heroku-buildpack-java/bin/compile $1 $2 $3
+
+BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
+
+mkdir -p "$BUILDPACK_DIR"
+echo "Copying maven as it will be needed"
+cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}"
+
+echo "Installing python"
+${DIR}/../heroku-buildpack-python/bin/compile $1 $2 $3
+
+echo "Installing ruby"
+${DIR}/../heroku-buildpack-ruby/bin/compile $1 $2 $3
+
+echo "Installing AWS CLI"
+/app/.heroku/python/bin/pip install awscli --exists-action=w --src=./.heroku/src --allow-all-external --disable-pip-version-check --no-cache-dir 
