@@ -1,0 +1,252 @@
+#!/usr/bin/env bash
+
+# Usage:
+#
+#     $ bin/compile <build-dir> <cache-dir> <env-path>
+
+# Fail fast and fail hard.
+set -eo pipefail
+
+[ "$BUILDPACK_XTRACE" ] && set -o xtrace
+
+# Prepend proper path for virtualenv hackery. This will be deprecated soon.
+export PATH=:/usr/local/bin:$PATH
+
+# Paths.
+BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
+ROOT_DIR=$(dirname $BIN_DIR)
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+# Static configurations for virtualenv caches.
+VIRTUALENV_LOC=".heroku/venv"
+LEGACY_TRIGGER="lib/python2.7"
+
+DEFAULT_PYTHON_VERSION="python-2.7.11"
+DEFAULT_PYTHON_STACK="cedar"
+PYTHON_EXE="/app/.heroku/python/bin/python"
+PIP_VERSION="7.1.2"
+SETUPTOOLS_VERSION="18.7.1"
+
+# Common Problem Warnings
+export WARNINGS_LOG=$(mktemp)
+
+# Setup bpwatch
+export PATH=$PATH:$ROOT_DIR/vendor/bpwatch
+LOGPLEX_KEY="t.b90d9d29-5388-4908-9737-b4576af1d4ce"
+export BPWATCH_STORE_PATH=$CACHE_DIR/bpwatch.json
+BUILDPACK_VERSION=v28
+
+# Setup pip-pop (pip-diff)
+export PATH=$PATH:$ROOT_DIR/vendor/pip-pop
+
+# Support Anvil Build_IDs
+[ ! "$SLUG_ID" ] && SLUG_ID="defaultslug"
+[ ! "$REQUEST_ID" ] && REQUEST_ID=$SLUG_ID
+[ ! "$STACK" ] && STACK=$DEFAULT_PYTHON_STACK
+
+# Sanitizing environment variables.
+unset GIT_DIR PYTHONHOME PYTHONPATH LD_LIBRARY_PATH LIBRARY_PATH
+
+bpwatch init $LOGPLEX_KEY
+bpwatch build python $BUILDPACK_VERSION $REQUEST_ID
+TMP_APP_DIR=$CACHE_DIR/tmp_app_dir
+
+bpwatch start compile
+
+# Syntax sugar.
+source $BIN_DIR/utils
+
+# Import collection of warnings.
+source $BIN_DIR/warnings
+
+# Directory Hacks for path consistiency.
+APP_DIR='/app'
+TMP_APP_DIR=$CACHE_DIR/tmp_app_dir
+
+# Skip these steps for Docker.
+if [[ ! "$DOCKER_BUILD" ]]; then
+
+  # Copy Anvil app dir to temporary storage...
+  bpwatch start anvil_appdir_stage
+  if [ "$SLUG_ID" ]; then
+    mkdir -p $TMP_APP_DIR
+    deep-mv $APP_DIR $TMP_APP_DIR
+  else
+    deep-rm $APP_DIR
+  fi
+  bpwatch stop anvil_appdir_stage
+
+  # Copy Application code in.
+  bpwatch start appdir_stage
+    deep-cp $BUILD_DIR $APP_DIR
+  bpwatch stop appdir_stage
+fi
+
+
+# Set new context.
+ORIG_BUILD_DIR=$BUILD_DIR
+BUILD_DIR=$APP_DIR
+
+# Set up outputs under new context
+PROFILE_PATH="$BUILD_DIR/.profile.d/python.sh"
+WEBCONCURRENCY_PROFILE_PATH="$BUILD_DIR/.profile.d/python.webconcurrency.sh"
+
+# We'll need to send these statics to other scripts we `source`.
+export BUILD_DIR CACHE_DIR BIN_DIR PROFILE_PATH
+
+# Prepend proper path buildpack use.
+export PATH=$BUILD_DIR/.heroku/python/bin:$BUILD_DIR/.heroku/vendor/bin:$PATH
+export PYTHONUNBUFFERED=1
+export LANG=en_US.UTF-8
+export C_INCLUDE_PATH=/app/.heroku/vendor/include:$BUILD_DIR/.heroku/vendor/include:/app/.heroku/python/include
+export CPLUS_INCLUDE_PATH=/app/.heroku/vendor/include:$BUILD_DIR/.heroku/vendor/include:/app/.heroku/python/include
+export LIBRARY_PATH=/app/.heroku/vendor/lib:$BUILD_DIR/.heroku/vendor/lib:/app/.heroku/python/lib
+export LD_LIBRARY_PATH=/app/.heroku/vendor/lib:$BUILD_DIR/.heroku/vendor/lib:/app/.heroku/python/lib
+export PKG_CONFIG_PATH=/app/.heroku/vendor/lib/pkg-config:$BUILD_DIR/.heroku/vendor/lib/pkg-config:/app/.heroku/python/lib/pkg-config
+
+# Switch to the repo's context.
+cd $BUILD_DIR
+
+# Experimental pre_compile hook.
+bpwatch start pre_compile
+  source $BIN_DIR/steps/hooks/pre_compile
+bpwatch stop pre_compile
+
+# If no requirements given, assume `setup.py develop`.
+if [ ! -f requirements.txt ]; then
+  echo "-e ." > requirements.txt
+fi
+
+
+# Sticky runtimes.
+if [ -f $CACHE_DIR/.heroku/python-version ]; then
+  DEFAULT_PYTHON_VERSION=$(cat $CACHE_DIR/.heroku/python-version)
+fi
+
+# Stack fallback for non-declared caches.
+if [ -f $CACHE_DIR/.heroku/python-stack ]; then
+  CACHED_PYTHON_STACK=$(cat $CACHE_DIR/.heroku/python-stack)
+else
+  CACHED_PYTHON_STACK=$DEFAULT_PYTHON_STACK
+fi
+
+# If no runtime given, assume default version.
+if [ ! -f runtime.txt ]; then
+  echo $DEFAULT_PYTHON_VERSION > runtime.txt
+fi
+
+# ### The Cache
+mkdir -p $CACHE_DIR
+
+# Purge "old-style" virtualenvs.
+bpwatch start clear_old_venvs
+  [ -d $CACHE_DIR/$LEGACY_TRIGGER ] && rm -fr $CACHE_DIR/.heroku/bin $CACHE_DIR/.heroku/lib $CACHE_DIR/.heroku/include
+  [ -d $CACHE_DIR/$VIRTUALENV_LOC ] && rm -fr $CACHE_DIR/.heroku/venv $CACHE_DIR/.heroku/src
+bpwatch stop clear_old_venvs
+
+# Restore old artifacts from the cache.
+bpwatch start restore_cache
+    mkdir -p .heroku
+
+    cp -R $CACHE_DIR/.heroku/python .heroku/ &> /dev/null || true
+    cp -R $CACHE_DIR/.heroku/python-stack .heroku/ &> /dev/null || true
+    cp -R $CACHE_DIR/.heroku/python-version .heroku/ &> /dev/null || true
+    cp -R $CACHE_DIR/.heroku/vendor .heroku/ &> /dev/null || true
+    cp -R $CACHE_DIR/.heroku/venv .heroku/ &> /dev/null || true
+
+bpwatch stop restore_cache
+
+set +e
+# Create set-aside `.heroku` folder.
+mkdir .heroku &> /dev/null
+set -e
+
+mkdir -p $(dirname $PROFILE_PATH)
+
+# Install Python.
+source $BIN_DIR/steps/python
+
+# Sanity check for setuptools/distribute.
+source $BIN_DIR/steps/setuptools
+
+# Uninstall removed dependencies with Pip.
+source $BIN_DIR/steps/pip-uninstall
+
+# Mercurial support.
+source $BIN_DIR/steps/mercurial
+
+# Pylibmc support.
+source $BIN_DIR/steps/pylibmc
+
+# Libffi support.
+source $BIN_DIR/steps/cryptography
+
+# GDAL support.
+source $BIN_DIR/steps/gdal
+
+# Install dependencies with Pip.
+source $BIN_DIR/steps/pip-install
+
+# Django collectstatic support.
+sub-env $BIN_DIR/steps/collectstatic
+
+
+# ### Finalize
+#
+
+# Set context environment variables.
+set-env PATH '$HOME/.heroku/python/bin:$PATH'
+set-env PYTHONUNBUFFERED true
+set-env PYTHONHOME /app/.heroku/python
+set-env LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LIBRARY_PATH'
+set-env LD_LIBRARY_PATH '/app/.heroku/vendor/lib:/app/.heroku/python/lib:$LD_LIBRARY_PATH'
+set-default-env LANG en_US.UTF-8
+set-default-env PYTHONHASHSEED random
+set-default-env PYTHONPATH /app/
+
+# Install sane-default script for WEB_CONCURRENCY environment variable.
+cp $ROOT_DIR/vendor/python.webconcurrency.sh $WEBCONCURRENCY_PROFILE_PATH
+
+
+# Experimental post_compile hook.
+bpwatch start post_compile
+  source $BIN_DIR/steps/hooks/post_compile
+bpwatch stop post_compile
+
+# Store new artifacts in cache.
+bpwatch start dump_cache
+
+  rm -rf $CACHE_DIR/.heroku/python
+  rm -rf $CACHE_DIR/.heroku/python-version
+  rm -rf $CACHE_DIR/.heroku/python-stack
+  rm -rf $CACHE_DIR/.heroku/vendor
+  rm -rf $CACHE_DIR/.heroku/venv
+
+  mkdir -p $CACHE_DIR/.heroku
+  cp -R .heroku/python $CACHE_DIR/.heroku/
+  cp -R .heroku/python-version $CACHE_DIR/.heroku/
+  cp -R .heroku/python-stack $CACHE_DIR/.heroku/ &> /dev/null || true
+  cp -R .heroku/vendor $CACHE_DIR/.heroku/ &> /dev/null || true
+  cp -R .heroku/venv $CACHE_DIR/.heroku/ &> /dev/null || true
+
+bpwatch stop dump_cache
+
+# ### Fin.
+if [[ ! "$DOCKER_BUILD" ]]; then
+
+  bpwatch start appdir_commit
+    deep-rm $ORIG_BUILD_DIR
+    deep-mv $BUILD_DIR $ORIG_BUILD_DIR
+  bpwatch stop appdir_commit
+
+  bpwatch start anvil_appdir_commit
+  if [ "$SLUG_ID" ]; then
+    deep-mv $TMP_APP_DIR $APP_DIR
+  fi
+
+  bpwatch stop anvil_appdir_commit
+  bpwatch stop compile
+fi
+
