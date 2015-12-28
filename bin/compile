@@ -18,8 +18,10 @@ echo "Installing python and AWS CLI"
 cp "${DIR}/../requirements.txt" "${BUILD_DIR}/"
 cp "${DIR}/../setup.py" "${BUILD_DIR}/"
 ${DIR}/../heroku-buildpack-python/bin/compile $1 $2 $3
-rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
-
 if [ $? -ne 0 ]; then
     exit 1
 fi
+rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
+
+echo "Installing properties weaver"
+cp -R "${DIR}/../properties-weaver "${BUILDPACK_DIR}/"
