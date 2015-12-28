@@ -14,8 +14,12 @@ mkdir -p "$BUILDPACK_DIR"
 echo "Copying maven as it will be needed"
 cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}"
 
-echo "Installing python"
+echo "Installing python and AWS CLI"
+cp "${DIR}/../requirements.txt" "${BUILD_DIR}/"
+cp "${DIR}/../setup.py" "${BUILD_DIR}/"
 ${DIR}/../heroku-buildpack-python/bin/compile $1 $2 $3
+rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
-echo "Installing AWS CLI"
-/app/.heroku/python/bin/pip install awscli --exists-action=w --src=./.heroku/src --allow-all-external --disable-pip-version-check --no-cache-dir 
+if [ $? -ne 0 ]; then
+    exit 1
+fi
