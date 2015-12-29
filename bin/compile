@@ -6,7 +6,11 @@ BUILD_DIR="$1"
 CACHE_DIR="$2"
 ENV_DIR="$3"
 
+echo "Invoking java buildpack"
 ${DIR}/../heroku-buildpack-java/bin/compile $1 $2 $3
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 
@@ -15,9 +19,9 @@ echo "Copying maven as it will be needed"
 cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}/maven"
 
 echo "Installing python and AWS CLI"
-cp "${DIR}/../requirements.txt" "${BUILD_DIR}/"
-cp "${DIR}/../setup.py" "${BUILD_DIR}/"
-${DIR}/../heroku-buildpack-python/bin/compile $1 $2 $3
+cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
+cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
+${DIR}/../aws-cli-installer/heroku-buildpack-python/bin/compile $1 $2 $3
 if [ $? -ne 0 ]; then
     exit 1
 fi
