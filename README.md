@@ -19,7 +19,8 @@ Here is how the whole thing works:
 
 ## Usage
 
-### Use the buildpack
+### Set the buildpack
+
 ```
 $ heroku buildpacks:set https://github.com/kubek2k/heroku-aws-java-lambda-buildpack
 ```
@@ -37,11 +38,21 @@ All env variables starting with `_` sign are not injected into `env.properties` 
 **URGENT:** The user owning the AWS access key :point_up: should have permissions to update function code (`Action: ["lambda:UpdateFunctionCode"]`)
 
 ### Push the code
+
 ```
 $ git push heroku master
 ```
 
 ### Deploy code with injected configuration to AWS
+
 ```
-heroku run deploy
+$ heroku run deploy
 ```
+
+## Pipelines support
+
+Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run promote`, so that changes are reflected on AWS.
+
+## Configuration value change
+
+As well as promotion, configuration changes require `heroku run deploy` to be ran after.
