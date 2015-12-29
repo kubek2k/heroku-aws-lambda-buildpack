@@ -2,6 +2,8 @@
 
 ## The problem
 
+While being a wonderful idea AWS Lambda doesn't provide any mechanisms neither for continous delivery, nor for configuration externalisation. Current state of service causes users to perform manual deployment of lambdas representing same logic, but different environments (dev/stage/prod). Additionally, there is no notion of configuration attached to lambda instances, which induces either a need to keep (supposedly secret) configuration along with lambda code, or to build env specific artifacts.
+
 ## Idea
 
 This is an attempt to make configuration and pipelines management of lambdas a little bit less painful.
@@ -12,7 +14,7 @@ Here is how the whole thing works:
     - Uses maven to traditionally build .jar artifact
     - Installs AWS CLI 
     - Installs a `deploy` process type in `Procfile` 
-  - To deploy lambda use: `heroku run deploy`, that does:
+  - To deploy lambda use `heroku run deploy`, that does:
     - Inject all available env variables to `env.properties` file
     - `env.properties` file is being added to lambda artifact (this file should be used in lambda code to retrieve configuration)
     - lambda artifact gets deployed to AWS 
