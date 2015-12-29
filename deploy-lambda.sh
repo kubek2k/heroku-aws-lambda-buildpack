@@ -3,7 +3,7 @@
 PROPERTIES_FILE="/tmp/env.properties"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILDPACK_DIR="${DIR}"
-OUTPUT_FILE=`mktemp /tmp/lambda.XXXXX`
+OUTPUT_FILE="/tmp/lambda.zip"
 
 echo "Retrieving properties"
 printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\"\2\"/' > "${PROPERTIES_FILE}"
