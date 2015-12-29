@@ -19,7 +19,13 @@ Here is how the whole thing works:
 
 ## Usage
 
-To be able to use the solution you need to set following env variables:
+### Use the buildpack
+```
+$ heroku buildpacks:set https://github.com/kubek2k/heroku-aws-java-lambda-buildpack
+```
+
+### Set env variables
+
   * `_LAMBDA_FUNCTION_NAME` - the ARN of lambda that is going to be deployed to
   * `_LAMBDA_JAR_FILE` - path to .jar artifact that is a product of mvn invocation (normally it should be something like "target/lambda-with-dependencies.jar")
   * `_AWS_ACCESS_KEY_ID` - AWS access key id used for deployment
@@ -28,4 +34,14 @@ To be able to use the solution you need to set following env variables:
 
 All env variables starting with `_` sign are not injected into `env.properties` file
 
-URGENT: The user owning the AWS access key :point_up: should have permissions to update function code (`Action: ["lambda:UpdateFunctionCode"]`)
+**URGENT:** The user owning the AWS access key :point_up: should have permissions to update function code (`Action: ["lambda:UpdateFunctionCode"]`)
+
+### Push the code
+```
+$ git push heroku master
+```
+
+### Deploy code with injected configuration to AWS
+```
+heroku run deploy
+```
