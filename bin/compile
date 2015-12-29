@@ -12,7 +12,7 @@ BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 
 mkdir -p "$BUILDPACK_DIR"
 echo "Copying maven as it will be needed"
-cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}"
+cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}/maven"
 
 echo "Installing python and AWS CLI"
 cp "${DIR}/../requirements.txt" "${BUILD_DIR}/"
