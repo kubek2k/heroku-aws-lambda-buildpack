@@ -28,3 +28,6 @@ cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
 
 echo "Installing deploy script" 
 cp "${DIR}/../deploy-lambda.sh" "${BUILDPACK_DIR}/"
+
+echo "Installing deployer to Procfile"
+echo ".heroku-aws-java-lambda-buildpack/deploy-lambda.sh" >> "${DIR}/../Procfile"
