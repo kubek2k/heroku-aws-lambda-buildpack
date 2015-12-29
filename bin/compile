@@ -30,4 +30,4 @@ echo "Installing deploy script"
 cp "${DIR}/../deploy-lambda.sh" "${BUILDPACK_DIR}/"
 
 echo "Installing deployer to Procfile"
-echo "deploy: .heroku-aws-java-lambda-buildpack/deploy-lambda.sh" >> "${DIR}/../Procfile"
+echo "deploy: .heroku-aws-java-lambda-buildpack/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
