@@ -53,7 +53,7 @@ $ heroku run deploy
 
 ## Pipelines support
 
-Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run promote` on application that was promoted to, so that changes are reflected on AWS.
+Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run deploy` on application that was promoted to, so that changes are reflected on AWS.
 
 ## Configuration value change
 
