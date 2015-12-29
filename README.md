@@ -13,7 +13,7 @@ Here is how the whole thing works:
     - Installs AWS CLI 
     - Installs a `deploy` process type in `Procfile` 
   - To deploy lambda use: `heroku run deploy`, that does:
-    - Inject all available variables to env.properties
+    - Inject all available env variables to `env.properties` file
     - `env.properties` file is being added to lambda artifact (this file should be used in lambda code to retrieve configuration)
     - lambda artifact gets deployed to AWS 
 
