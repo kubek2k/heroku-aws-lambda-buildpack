@@ -24,4 +24,7 @@ fi
 rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
 echo "Installing properties weaver"
-cp -R "${DIR}/../properties-weaver "${BUILDPACK_DIR}/"
+cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
+
+echo "Installing deploy script" 
+cp "${DIR}/../deploy-lambda.sh" "${BUILDPACK_DIR}/"
