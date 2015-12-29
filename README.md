@@ -53,8 +53,14 @@ $ heroku run deploy
 
 ## Pipelines support
 
-Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run promote`, so that changes are reflected on AWS.
+Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run promote` on application that was promoted to, so that changes are reflected on AWS.
 
 ## Configuration value change
 
 As well as promotion, configuration changes require `heroku run deploy` to be ran after.
+
+## What could be done better
+
+First of all - this solution shouldn't be treated as neither something permanent nor final. 
+  * Ideally Amazon will someday address issues that this buildpack tries to solve, and I will be able to delete it :),
+  * I can see a huge issue with a requirement of invoking `heroku run deploy` after each deploy/configuration change/promotion. This is something that is really hard to automate within heroku. One way to somehow deal with it is to scale deploy worker to 1 `Free` dyno - it will cause the deploy to be run multiple times within the day, but its `Free` so... ;)
