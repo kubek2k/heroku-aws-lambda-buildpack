@@ -12,7 +12,7 @@ BUILDPACK_DIR="${DIR}"
 OUTPUT_FILE="/tmp/lambda.jar"
 
 echo "Retrieving properties"
-printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\"\2\"/' > "${PROPERTIES_FILE}"
+printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\2/' > "${PROPERTIES_FILE}"
 
 echo "Putting properties into jarfile"
 ${BUILDPACK_DIR}/properties-weaver/weave.sh "${DIR}/../${_LAMBDA_JAR_FILE}" "${PROPERTIES_FILE}" "${OUTPUT_FILE}" 
