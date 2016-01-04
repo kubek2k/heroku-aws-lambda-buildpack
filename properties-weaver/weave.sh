@@ -18,3 +18,4 @@ cd "${OUTPUT_DIR}"
 zip -r "${OUTPUT_FILE}" * 
 cd -
 rm -rf "${OUTPUT_DIR}"
+${DIR}/../maven/bin/mvn -f "${DIR}/weave-pom.xml" antrun:run -DinputFile="${INPUT_FILE}" -DoutputFile="${OUTPUT_FILE}.jar" -DpropertiesFile="${PROPERTIES_FILE}"
