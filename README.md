@@ -29,7 +29,7 @@ $ heroku buildpacks:set https://github.com/kubek2k/heroku-aws-java-lambda-buildp
 
 ### Set env variables
 
-  * `_LAMBDA_FUNCTION_NAME` - the ARN of lambda that is going to be deployed to
+  * `_LAMBDA_FUNCTION_ARN` - the ARN of lambda that is going to be deployed to
   * `_LAMBDA_JAR_FILE` - path to .jar artifact that is a product of mvn invocation (normally it should be something like "target/lambda-with-dependencies.jar")
   * `_AWS_ACCESS_KEY_ID` - AWS access key id used for deployment
   * `_AWS_SECRET_ACCESS_KEY` - AWS secret key used for deployment
