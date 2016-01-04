@@ -53,11 +53,11 @@ $ heroku run deploy
 
 ## Pipelines support
 
-Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run deploy` on application that was promoted to, so that changes are reflected on AWS.
+Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run deploy` on application that was promoted to, so that changes are reflected on AWS (see [What could be done better](#what-could-be-done-better) ).
 
 ## Configuration value change
 
-As well as promotion, configuration changes require `heroku run deploy` to be ran after.
+As well as promotion, configuration changes require `heroku run deploy` to be ran after (see [What could be done better](#what-could-be-done-better) ).
 
 ## What could be done better
 
