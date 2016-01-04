@@ -10,5 +10,9 @@ INPUT_FILE="$1"
 PROPERTIES_FILE="$2"
 OUTPUT_FILE="$3"
 
-${DIR}/../maven/bin/mvn -f "${DIR}/weave-pom.xml" antrun:run -DinputFile="${INPUT_FILE}" -DoutputFile="${OUTPUT_FILE}" -DpropertiesFile="${PROPERTIES_FILE}"
-
+OUTPUT_DIR="/tmp/artifact-without-properties/"
+mkdir -p "${OUTPUT_DIR}"
+unzip "${INPUT_FILE}" -d "${OUTPUT_DIR}"
+cp "${PROPERTIES_FILE}" "${OUTPUT_DIR}"
+zip "${OUTPUT_FILE}" "${OUTPUT_DIR}/*" 
+rm -rf "${OUTPUT_DIR}"
