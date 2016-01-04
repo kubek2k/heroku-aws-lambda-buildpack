@@ -2,22 +2,22 @@
 
 ## The problem
 
-While being a wonderful idea AWS Lambda doesn't provide any mechanisms neither for continous delivery, nor for configuration externalisation. Current state of service causes users to perform manual deployment of lambdas representing same logic, but different environments (dev/stage/prod). Additionally, there is no notion of configuration attached to lambda instances, which induces either a need to keep (supposedly secret) configuration along with lambda code, or to build env specific artifacts.
+While being a wonderful idea AWS Lambda lacks in terms of continous devlivery tooling and configuration externalisation. In current state Lambda offers us the same codeline and aliases, but there is no way to create a notion of 12Factor app [configuration](http://12factor.net/config). We could either hardcode (supposedly secret) configuration into lambda code, or store it in some external location (S3), but it brings issues in terms of env specific setup, and managing it along with software releases.
 
 ## Idea
 
 This is an attempt to make configuration and pipelines management of lambdas a little bit less painful.
-The idea is to use Heroku dyno as a basis for lambda creation. 
+The idea is to use Heroku dyno as a basis for lambda creation.
 Here is how the whole thing works:
 
   - The buildpack:
     - Uses maven to traditionally build .jar artifact
-    - Installs AWS CLI 
-    - Installs a `deploy` process type in `Procfile` 
+    - Installs AWS CLI
+    - Installs a `deploy` process type in `Procfile`
   - To deploy lambda use `heroku run deploy`, that does:
     - Inject all available env variables to `env.properties` file
     - `env.properties` file is being added to lambda artifact (this file should be used in lambda code to retrieve configuration)
-    - lambda artifact gets deployed to AWS 
+    - lambda artifact gets deployed to AWS
 
 ## Usage
 
@@ -61,6 +61,7 @@ As well as promotion, configuration changes require `heroku run deploy` to be ra
 
 ## What could be done better
 
-First of all - this solution shouldn't be treated as neither something permanent nor final. 
+First of all - this solution shouldn't be treated as neither something permanent nor final.
   * Ideally Amazon will someday address issues that this buildpack tries to solve, and I will be able to delete it :),
+  * One could see a discrepancy between this solution and aformentioned 12factor app config (the real artifact deployed to lambda differs from env to env), but at least from outside it looks like config is externalized.
   * I can see a huge issue with a requirement of invoking `heroku run deploy` after each deploy/configuration change/promotion. This is something that is really hard to automate within heroku. One way to somehow deal with it is to scale deploy worker to 1 `Free` dyno - it will cause the deploy to be run multiple times within the day, but its `Free` so... ;)
