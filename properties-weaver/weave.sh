@@ -12,4 +12,5 @@ OUTPUT_FILE="$3"
 
 OUTPUT_DIR="/tmp/artifact-without-properties/"
 cp "${INPUT_FILE}" "${OUTPUT_FILE}"
-jar uf "${OUTPUT_FILE}" "${PROPERTIES_FILE}"
+cp "${PROPERTIES_FILE}" /tmp/env.properties
+jar uf "${OUTPUT_FILE}" -C /tmp env.properties
