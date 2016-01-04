@@ -14,5 +14,7 @@ OUTPUT_DIR="/tmp/artifact-without-properties/"
 mkdir -p "${OUTPUT_DIR}"
 unzip "${INPUT_FILE}" -d "${OUTPUT_DIR}"
 cp "${PROPERTIES_FILE}" "${OUTPUT_DIR}"
-zip "${OUTPUT_FILE}" "${OUTPUT_DIR}*" 
+cd "${OUTPUT_DIR}"
+zip -r "${OUTPUT_FILE}" * 
+cd -
 rm -rf "${OUTPUT_DIR}"
