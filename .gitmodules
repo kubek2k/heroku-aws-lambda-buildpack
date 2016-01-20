@@ -1,3 +1,0 @@
-[submodule "heroku-buildpack-java"]
-	path = heroku-buildpack-java
-	url = git@github.com:heroku/heroku-buildpack-java.git
