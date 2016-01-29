@@ -1,1 +1,15 @@
-../heroku-buildpack-java/bin/detect
+#!/bin/bash
+
+
+DETECT=`../heroku-buildpack-java/bin/detect`
+
+if [ "$DETECT" == "Java" ]; then
+    echo $DETECT && exit 0
+else
+    DETECT=`../heroku-buildpack-nodejs/bin/detect`
+    if [ "$DETECT" == "Node.js" ]; then
+        echo $DETECT && exit 0
+    fi
+fi
+
+exit 1
