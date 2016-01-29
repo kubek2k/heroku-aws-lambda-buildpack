@@ -6,14 +6,6 @@ BUILD_DIR="$1"
 CACHE_DIR="$2"
 ENV_DIR="$3"
 
-echo "Invoking java buildpack"
-${DIR}/../heroku-buildpack-java/bin/compile $1 $2 $3
-if [ $? -ne 0 ]; then
-    exit 1
-fi
-
-BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
-
 echo "Installing python and AWS CLI"
 cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
 cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
@@ -23,9 +15,16 @@ if [ $? -ne 0 ]; then
 fi
 rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
+echo "Invoking java buildpack"
+${DIR}/../heroku-buildpack-java/bin/compile $1 $2 $3
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
 echo "Installing properties weaver"
 cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
 
+BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 echo "Installing deploy script" 
 cp "${DIR}/../deploy-lambda.sh" "${BUILDPACK_DIR}/"
 
