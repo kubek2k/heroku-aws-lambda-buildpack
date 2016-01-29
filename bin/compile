@@ -14,10 +14,6 @@ fi
 
 BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 
-mkdir -p "$BUILDPACK_DIR"
-echo "Copying maven as it will be needed"
-cp -R "${CACHE_DIR}/.maven" "${BUILDPACK_DIR}/maven"
-
 echo "Installing python and AWS CLI"
 cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
 cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
