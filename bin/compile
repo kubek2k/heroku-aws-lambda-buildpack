@@ -49,5 +49,8 @@ else
     exit 1
 fi
 
+echo "Deploying common code"
+cp "${DIR}/../deploy-common.sh" "${BUILDPACK_DIR}/"
+
 echo "Installing deployer to Procfile"
 echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
