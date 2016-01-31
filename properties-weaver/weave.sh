@@ -11,4 +11,5 @@ PROPERTIES_FILE="$2"
 OUTPUT_FILE="$3"
 
 cp "${INPUT_FILE}" "${OUTPUT_FILE}"
-jar uf "${OUTPUT_FILE}" -C /tmp "${PROPERTIES_FILE}"
+cp "${PROPERTIES_FILE}" /tmp/env.properties
+jar uf "${OUTPUT_FILE}" -C /tmp env.properties
