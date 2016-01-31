@@ -6,24 +6,23 @@ BUILD_DIR="$1"
 CACHE_DIR="$2"
 ENV_DIR="$3"
 BUILDPACK_NAME="heroku-aws-java-lambda-buildpack"
-
-echo "Installing python and AWS CLI"
-cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
-cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
-${DIR}/../aws-cli-installer/heroku-buildpack-python/bin/compile $1 $2 $3
-if [ $? -ne 0 ]; then
-    exit 1
-fi
-rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
-
-DETECTED=`${DIR}/detect $1`
-echo "Detected ${DETECTED}"
-
 BUILDPACK_DIR="${BUILD_DIR}/.${BUILDPACK_NAME}"
-mkdir -p "${BUILDPACK_DIR}"
-if [ "$DETECTED" == "Java" ]; then
+
+function installAWSCLI() {
+    echo "Installing python and AWS CLI"
+    cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
+    cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
+    ${DIR}/../aws-cli-installer/heroku-buildpack-python/bin/compile $BUILD_DIR $CACHE_DIR $ENV_DIR
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+    rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
+}
+
+function installJavaDeployment() {
     echo "Invoking java buildpack"
-    ${DIR}/../heroku-buildpack-java/bin/compile "$1" "$2" "$3"
+    mkdir -p "${BUILDPACK_DIR}"
+    ${DIR}/../heroku-buildpack-java/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
     fi
@@ -33,21 +32,43 @@ if [ "$DETECTED" == "Java" ]; then
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
+}
 
-elif [ "$DETECTED" == "Node.js" ]; then
+function installNodeJsDeployment() {
     echo "Invoking node.js buildpack"
-    ${DIR}/../heroku-buildpack-nodejs/bin/compile "$1" "$2" "$3"
+    mkdir -p "${BUILDPACK_DIR}"
+    ${DIR}/../heroku-buildpack-nodejs/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
     fi
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
+}
 
+function installCommonDeploymentCode() {
+    echo "Deploying common code"
+    cp "${DIR}/../deploy-common.sh" "${BUILDPACK_DIR}/"
+}
+
+function installDeployerEntry() {
+    echo "Installing deployer to Procfile"
+    echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+}
+
+installAWSCLI
+
+DETECTED=`${DIR}/detect $1`
+echo "Detected ${DETECTED}"
+
+if [ "$DETECTED" == "Java" ]; then
+    installJavaDeployment
+elif [ "$DETECTED" == "Node.js" ]; then
+    installNodeJsDeployment
 else 
     echo "Some weird problem we've got. Compiling something that was detected while its not supported"
     exit 1
 fi
 
-echo "Installing deployer to Procfile"
-echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+installCommonDeploymentCode
+installDeployerEntry
