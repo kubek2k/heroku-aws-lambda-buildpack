@@ -21,6 +21,7 @@ function installAWSCLI() {
 
 function installJavaDeployment() {
     echo "Invoking java buildpack"
+    mkdir -p "${BUILDPACK_DIR}"
     ${DIR}/../heroku-buildpack-java/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
@@ -35,6 +36,7 @@ function installJavaDeployment() {
 
 function installNodeJsDeployment() {
     echo "Invoking node.js buildpack"
+    mkdir -p "${BUILDPACK_DIR}"
     ${DIR}/../heroku-buildpack-nodejs/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
@@ -44,12 +46,21 @@ function installNodeJsDeployment() {
     cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
 }
 
+function installCommonDeploymentCode() {
+    echo "Deploying common code"
+    cp "${DIR}/../deploy-common.sh" "${BUILDPACK_DIR}/"
+}
+
+function installDeployerEntry() {
+    echo "Installing deployer to Procfile"
+    echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+}
+
 installAWSCLI
 
 DETECTED=`${DIR}/detect $1`
 echo "Detected ${DETECTED}"
 
-mkdir -p "${BUILDPACK_DIR}"
 if [ "$DETECTED" == "Java" ]; then
     installJavaDeployment
 elif [ "$DETECTED" == "Node.js" ]; then
@@ -59,8 +70,5 @@ else
     exit 1
 fi
 
-echo "Deploying common code"
-cp "${DIR}/../deploy-common.sh" "${BUILDPACK_DIR}/"
-
-echo "Installing deployer to Procfile"
-echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+installCommonDeploymentCode
+installDeployerEntry
