@@ -29,7 +29,7 @@ if [ "$DETECTED" == "Java" ]; then
     cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
 
     echo "Installing deploy script"
-    cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/"
+    cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
 
 elif [ "$DETECTED" == "Node.js" ]; then
     echo "Invoking node.js buildpack"
