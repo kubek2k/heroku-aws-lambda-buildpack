@@ -10,6 +10,5 @@ INPUT_FILE="$1"
 PROPERTIES_FILE="$2"
 OUTPUT_FILE="$3"
 
-OUTPUT_DIR="/tmp/artifact-without-properties/"
 cp "${INPUT_FILE}" "${OUTPUT_FILE}"
 jar uf "${OUTPUT_FILE}" -C /tmp "${PROPERTIES_FILE}"
