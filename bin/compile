@@ -12,22 +12,16 @@ function installAWSCLI() {
     echo "Installing python and AWS CLI"
     cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
     cp "${DIR}/../aws-cli-installer/setup.py" "${BUILD_DIR}/"
-    ${DIR}/../aws-cli-installer/heroku-buildpack-python/bin/compile $1 $2 $3
+    ${DIR}/../aws-cli-installer/heroku-buildpack-python/bin/compile $BUILD_DIR $CACHE_DIR $ENV_DIR
     if [ $? -ne 0 ]; then
         exit 1
     fi
     rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 }
 
-installAWSCLI
-
-DETECTED=`${DIR}/detect $1`
-echo "Detected ${DETECTED}"
-
-mkdir -p "${BUILDPACK_DIR}"
-if [ "$DETECTED" == "Java" ]; then
+function installJavaDeployment() {
     echo "Invoking java buildpack"
-    ${DIR}/../heroku-buildpack-java/bin/compile "$1" "$2" "$3"
+    ${DIR}/../heroku-buildpack-java/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
     fi
@@ -37,16 +31,29 @@ if [ "$DETECTED" == "Java" ]; then
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
+}
 
-elif [ "$DETECTED" == "Node.js" ]; then
+function installNodeJsDeployment() {
     echo "Invoking node.js buildpack"
-    ${DIR}/../heroku-buildpack-nodejs/bin/compile "$1" "$2" "$3"
+    ${DIR}/../heroku-buildpack-nodejs/bin/compile "$BUILD_DIR" "$CACHE_DIR" "$ENV_DIR"
     if [ $? -ne 0 ]; then
         exit 1
     fi
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
+}
+
+installAWSCLI
+
+DETECTED=`${DIR}/detect $1`
+echo "Detected ${DETECTED}"
+
+mkdir -p "${BUILDPACK_DIR}"
+if [ "$DETECTED" == "Java" ]; then
+    installJavaDeployment
+elif [ "$DETECTED" == "Node.js" ]; then
+    installNodeJsDeployment
 else 
     echo "Some weird problem we've got. Compiling something that was detected while its not supported"
     exit 1
