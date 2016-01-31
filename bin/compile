@@ -16,6 +16,7 @@ fi
 rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
 DETECTED=`${DIR}/../heroku-buildpack-java/bin/detect $1`
+echo "Detected ${DETECTED}"
 
 BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 mkdir -p "${BUILDPACK_DIR}"
