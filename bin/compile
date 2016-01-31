@@ -15,18 +15,32 @@ if [ $? -ne 0 ]; then
 fi
 rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
-echo "Invoking java buildpack"
-${DIR}/../heroku-buildpack-java/bin/compile $1 $2 $3
-if [ $? -ne 0 ]; then
-    exit 1
-fi
-
-echo "Installing properties weaver"
-cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
+DETECTED=`${DIR}/../heroku-buildpack-java/bin/detect`
 
 BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
-echo "Installing deploy script" 
-cp "${DIR}/../deploy-lambda.sh" "${BUILDPACK_DIR}/"
+if [ "$DETECTED" == "Java" ]; then
+    echo "Invoking java buildpack"
+    ${DIR}/../heroku-buildpack-java/bin/compile "$1" "$2" "$3"
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+
+    echo "Installing properties weaver"
+    cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
+
+    echo "Installing deploy script"
+    cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/"
+
+elif [ "$DETECTED" == "Node.js" ]; then
+    echo "Invoking node.js buildpack"
+    ${DIR}/../heroku-buildpack-nodejs/bin/compile "$1" "$2" "$3"
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+
+    echo "Installing deploy script"
+    cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}"
+fi
 
 echo "Installing deployer to Procfile"
 echo "deploy: .heroku-aws-java-lambda-buildpack/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"

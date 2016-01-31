@@ -1,12 +1,13 @@
 #!/bin/bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-DETECT=`../heroku-buildpack-java/bin/detect`
+DETECT=`${DIR}/../heroku-buildpack-java/bin/detect $1`
 
 if [ "$DETECT" == "Java" ]; then
     echo $DETECT && exit 0
 else
-    DETECT=`../heroku-buildpack-nodejs/bin/detect`
+    DETECT=`${DIR}/../heroku-buildpack-nodejs/bin/detect $1`
     if [ "$DETECT" == "Node.js" ]; then
         echo $DETECT && exit 0
     fi
