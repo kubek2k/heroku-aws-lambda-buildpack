@@ -6,13 +6,13 @@ _AWS_ACCESS_KEY_ID="${_AWS_ACCESS_KEY_ID:?You need to set _AWS_ACCESS_KEY_ID}"
 _AWS_DEFAULT_REGION="${_AWS_DEFAULT_REGION:?You need to set _AWS_DEFAULT_REGION}"
 
 function retrieveProperties() {
-    OUTPUT_FILE="$1"
+    local OUTPUT_FILE="$1"
     echo "Retrieving properties"
     printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\2/' > "${OUTPUT_FILE}"
 }
 
 function deployLambda() {
-    LAMBDA_FILE="$1"
+    local LAMBDA_FILE="$1"
     echo "Deploying lambda"
     AWS_ACCESS_KEY_ID="${_AWS_ACCESS_KEY_ID}" AWS_SECRET_ACCESS_KEY="${_AWS_SECRET_ACCESS_KEY}" AWS_DEFAULT_REGION="${_AWS_DEFAULT_REGION}" ${DIR}/../.heroku/python/bin/aws lambda update-function-code --function-name "${_LAMBDA_FUNCTION_ARN}" --zip-file "fileb://${LAMBDA_FILE}"
 }
