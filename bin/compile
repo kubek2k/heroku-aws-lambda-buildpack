@@ -26,7 +26,7 @@ if [ "$DETECTED" == "Java" ]; then
     fi
 
     echo "Installing properties weaver"
-    cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/"
+    cp -R "${DIR}/../properties-weaver" "${BUILDPACK_DIR}/properties-weaver"
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-java-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
