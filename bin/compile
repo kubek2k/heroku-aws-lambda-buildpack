@@ -15,7 +15,7 @@ if [ $? -ne 0 ]; then
 fi
 rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 
-DETECTED=`${DIR}/../heroku-buildpack-java/bin/detect`
+DETECTED=`${DIR}/../heroku-buildpack-java/bin/detect $1`
 
 BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
 if [ "$DETECTED" == "Java" ]; then
@@ -40,6 +40,10 @@ elif [ "$DETECTED" == "Node.js" ]; then
 
     echo "Installing deploy script"
     cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}"
+
+else 
+    echo "Some weird problem we've got. Compiling something that was detected while its not supported"
+    exit 1
 fi
 
 echo "Installing deployer to Procfile"
