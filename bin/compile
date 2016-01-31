@@ -41,7 +41,7 @@ elif [ "$DETECTED" == "Node.js" ]; then
     fi
 
     echo "Installing deploy script"
-    cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}"
+    cp "${DIR}/../deploy-nodejs-lambda.sh" "${BUILDPACK_DIR}/deploy-lambda.sh"
 
 else 
     echo "Some weird problem we've got. Compiling something that was detected while its not supported"
@@ -49,4 +49,4 @@ else
 fi
 
 echo "Installing deployer to Procfile"
-echo "deploy: .heroku-aws-java-lambda-buildpack/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+echo "deploy: ${BUILDPACK_DIR}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
