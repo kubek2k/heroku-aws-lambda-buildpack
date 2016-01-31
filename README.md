@@ -24,7 +24,7 @@ Here is how the whole thing works:
 ### Set the buildpack
 
 ```
-$ heroku buildpacks:set https://github.com/kubek2k/heroku-aws-java-lambda-buildpack
+$ heroku buildpacks:set https://github.com/kubek2k/heroku-aws-lambda-buildpack
 ```
 
 ### Set env variables
