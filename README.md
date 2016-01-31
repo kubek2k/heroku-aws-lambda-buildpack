@@ -54,6 +54,16 @@ $ git push heroku master
 $ heroku run deploy
 ```
 
+## Examples 
+
+### Sample java lambda
+
+https://github.com/kubek2k/sample-aws-java-lambda
+
+### Sample node.js lambda
+
+https://github.com/kubek2k/sample-aws-nodejs-lambda
+
 ## Pipelines support
 
 Pipelines should work out of the box, but after each `promote` you have to remember to invoke `heroku run deploy` on application that was promoted to, so that changes are reflected on AWS (see [What could be done better](#what-could-be-done-better) ).
