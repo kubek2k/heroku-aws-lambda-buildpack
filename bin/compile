@@ -5,6 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR="$1"
 CACHE_DIR="$2"
 ENV_DIR="$3"
+BUILDPACK_NAME="heroku-aws-java-lambda-buildpack"
 
 echo "Installing python and AWS CLI"
 cp "${DIR}/../aws-cli-installer/requirements.txt" "${BUILD_DIR}/"
@@ -18,7 +19,7 @@ rm "${BUILD_DIR}/requirements.txt" "${BUILD_DIR}/setup.py"
 DETECTED=`${DIR}/detect $1`
 echo "Detected ${DETECTED}"
 
-BUILDPACK_DIR="${BUILD_DIR}/.heroku-aws-java-lambda-buildpack"
+BUILDPACK_DIR="${BUILD_DIR}/.${BUILDPACK_NAME}"
 mkdir -p "${BUILDPACK_DIR}"
 if [ "$DETECTED" == "Java" ]; then
     echo "Invoking java buildpack"
@@ -49,4 +50,4 @@ else
 fi
 
 echo "Installing deployer to Procfile"
-echo "deploy: ${BUILDPACK_DIR}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
+echo "deploy: .${BUILDPACK_NAME}/deploy-lambda.sh" >> "${BUILD_DIR}/Procfile"
