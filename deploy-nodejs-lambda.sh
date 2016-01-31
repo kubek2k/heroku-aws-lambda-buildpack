@@ -8,9 +8,9 @@ _AWS_DEFAULT_REGION="${_AWS_DEFAULT_REGION:?You need to set _AWS_DEFAULT_REGION}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${DIR}/deploy-common.sh"
 
-local BUILDPACK_DIR="${DIR}"
-local OUTPUT_DIR="/tmp/lambda/"
-local OUTPUT_FILE="/tmp/lambda.zip"
+BUILDPACK_DIR="${DIR}"
+OUTPUT_DIR="/tmp/lambda/"
+OUTPUT_FILE="/tmp/lambda.zip"
 
 echo "Copying source to temporary location"
 mkdir -p "${OUTPUT_DIR}"
