@@ -6,13 +6,14 @@ _AWS_SECRET_ACCESS_KEY="${_AWS_SECRET_ACCESS_KEY:?You need to set _AWS_SECRET_AC
 _AWS_ACCESS_KEY_ID="${_AWS_ACCESS_KEY_ID:?You need to set _AWS_ACCESS_KEY_ID}"
 _AWS_DEFAULT_REGION="${_AWS_DEFAULT_REGION:?You need to set _AWS_DEFAULT_REGION}"
 
-PROPERTIES_FILE="/tmp/env.properties"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${DIR}/deploy-common.sh"
+
+PROPERTIES_FILE="/tmp/env.properties"
 BUILDPACK_DIR="${DIR}"
 OUTPUT_FILE="/tmp/lambda.jar"
 
-echo "Retrieving properties"
-printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\2/' > "${PROPERTIES_FILE}"
+retrieveProperties "${PROPERTIES_FILE}"
 
 echo "Putting properties into jarfile"
 ${BUILDPACK_DIR}/properties-weaver/weave.sh "${DIR}/../${_LAMBDA_JAR_FILE}" "${PROPERTIES_FILE}" "${OUTPUT_FILE}" 

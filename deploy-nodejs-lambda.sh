@@ -6,6 +6,8 @@ _AWS_ACCESS_KEY_ID="${_AWS_ACCESS_KEY_ID:?You need to set _AWS_ACCESS_KEY_ID}"
 _AWS_DEFAULT_REGION="${_AWS_DEFAULT_REGION:?You need to set _AWS_DEFAULT_REGION}"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${DIR}/deploy-common.sh"
+
 BUILDPACK_DIR="${DIR}"
 OUTPUT_DIR="/tmp/lambda/"
 OUTPUT_FILE="/tmp/lambda.zip"
@@ -14,8 +16,7 @@ echo "Copying source to temporary location"
 mkdir -p "${OUTPUT_DIR}"
 cp -R ~/* "${OUTPUT_DIR}"
 
-echo "Retrieving properties"
-printenv | grep -v "^_.*" | sed -e 's/^\([^\=]*\)=\(.*\)$/\1=\2/' > "${OUTPUT_DIR}env.properties"
+retrieveProperties "${OUTPUT_DIR}env.properties"
 
 echo "Zipping the lambda code"
 chmod -R a+rwx "${OUTPUT_DIR}"
